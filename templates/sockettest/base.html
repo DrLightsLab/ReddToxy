@@ -1,0 +1,79 @@
+<html>
+	<head>
+		{% load staticfiles %}
+		<link rel='stylesheet' type='text/css' href='{% static 'sockettest/styles.css'%}'>
+		<script type='text/javascript' src='https://code.jquery.com/jquery-1.12.0.js'></script>
+	</head>
+	<body id='background'>
+		<div id='menu'>
+			<div id='icon_a'>
+				<img id='icon' src="{% static 'sockettest/reddit-xxl.png'%}"/>
+			</div>
+			<!-- <form method='post' action='{% url 'redditajax' %}'> -->
+			<!-- <form method='post' action=''> -->
+				{% csrf_token %}
+				<div id='search_align'>
+					<!-- {{search_form}} -->
+					<input id='search' type="text" name="search"/>
+				</div>
+				<div id='search_align'>
+					<input id='search_icon' type='image' src="http://airfuz.com/Images/wysicons/search-white.png" name='search_button'/>
+				</div>
+			<!-- </form> -->
+		</div>
+		<div style="clear: both;"></div>
+		<div class='container'>
+				<div class='column1'> </div>
+				<div class='column2'> </div>
+				<div class='column3'> </div>
+			<div style="clear: both;"></div>
+		</div>
+		<script>
+			$(document).ready(function () {
+				$("#search_icon").click(function() {
+					console.log('search button clicked.')
+					ajax_post();
+				});
+			});
+			function ajax_post() {
+				$.ajax({
+					type: "POST",
+					url: '{% url 'redditajax' %}',
+					data: { subs : document.getElementsByName("search")[0].value,
+									csrfmiddlewaretoken : document.getElementsByName('csrfmiddlewaretoken')[0].value,
+				 				},
+					success: function(json) {
+						console.log(json);
+						console.log('Printing subreddit: ' + json[0].title);
+						console.log('Printing first submission: ' + json[0].submission[0]);
+						var counter = 0;
+						$.each(json, function(index, value) {
+							console.log('Checking to see if element exists: ' + $("."+value.title).length);
+							if($("."+value.title).length == 0) {
+								if(index % 3 == 0) {
+									$(".column1").append("<div id='tile' class=" + value.title +">");
+									$("."+value.title).append("<div id='link_text' style='text-align:center'>" + value.title + "</div>");
+								}
+								if(index % 3 == 1) {
+									$(".column2").append("<div id='tile' class=" + value.title +">");
+									$("."+value.title).append("<div id='link_text' style='text-align:center'>" + value.title + "</div>");
+								}
+								if(index % 3 == 2) {
+									$(".column3").append("<div id='tile' class=" + value.title +">");
+									$("."+value.title).append("<div id='link_text' style='text-align:center'>" + value.title + "</div>");
+								}
+								for(i = 0; i < value.submission.length; i++) {
+									$("."+value.title).append("<div id='link_text'>" + value.submission[i] + "</div>");
+								}
+							}
+						});
+					},
+					
+					error: function(xhr, errmsg, err) {
+						console.log(xhr.status + ": " + xhr.responseText);
+					}
+				});
+			};
+		</script>
+	</body>
+</html>	
